@@ -5,8 +5,10 @@
  */
 package iag0010javaplantlogger;
 
+import static com.sun.xml.internal.messaging.saaj.packaging.mime.util.ASCIIUtility.getBytes;
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
@@ -54,53 +56,57 @@ public class IAG0010JavaPlantLogger {
         }
     }
 
-    public static void readOrWriteData(JTextArea displayedText) {
-        int nRead = 0, offset = 0, nToRead = 0, nToWrite = 0;
+    public static void readData(JTextArea displayedText) {
+        int nRead = 0;
         byte Buf[] = new byte[2048];
 
         try {
-            inStream = socket.getInputStream(); 
-            nRead = inStream.read(Buf, offset, nToRead);
-            displayedText.append(getStringFromInputStream(inStream));
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            nRead = in.read(Buf);
+            displayedText.append("Message received from emulator: " + new String(Buf, 1, nRead));
+            displayedText.append("\n");
         } catch (IOException ex) {
             Logger.getLogger(IAG0010JavaPlantLogger.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         if (nRead < 0) {
-            System.out.println("Nothin can be displayed");
+            System.out.println("Nothing can be displayed");
         }
+    }
 
+    public static void sendData(String dataToSend) {
+        byte[] Buf = new byte[2 * dataToSend.length() + 6];
+        Buf[0] = (byte) (2 * dataToSend.length() + 6);
+        BitConverter.ToBytes(dataToSend, Buf, 4);
+        
         try {
-            outStream = socket.getOutputStream();
-            outStream.write(Buf, offset, nToWrite);
+            System.out.println("Vous êtes au bon endroit");
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.write(Buf);
+            out.flush();
         } catch (IOException ex) {
             Logger.getLogger(IAG0010JavaPlantLogger.class.getName()).log(Level.SEVERE, null, ex);
         }
+            
     }
-
-    public static String getStringFromInputStream(InputStream is) {
-        BufferedReader br = null;
-        StringBuilder sb = new StringBuilder();
-
-        String line;
+    
+    /*public static void sendStop() {
+        String password = "stop";
+        int sizePassword = password.length();
+        //byte[] Buf = new byte[sizePassword * 2 + 6];
+        byte[] Buf = new byte[14];
+        //Buf[0] = (byte) (sizePassword + 2 * 3);
+        Buf[0] = (byte) (14);
+        BitConverter.ToBytes(password, Buf, 4);
+        
         try {
-
-            br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-        } catch (IOException e) {
-            Logger.getLogger(IAG0010JavaPlantLogger.class.getName()).log(Level.SEVERE, null, e);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    Logger.getLogger(IAG0010JavaPlantLogger.class.getName()).log(Level.SEVERE, null, e);
-                }
-            }
+            System.out.println("Vous êtes au bon endroit");
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.write(Buf);
+            out.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(IAG0010JavaPlantLogger.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return sb.toString();
-    }
+            
+    }*/
 }
