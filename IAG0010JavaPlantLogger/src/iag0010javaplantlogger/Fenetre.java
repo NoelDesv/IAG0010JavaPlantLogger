@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Scanner;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -47,6 +48,8 @@ public class Fenetre extends JFrame {
 
     boolean fileSelected = false;
     boolean connected = false;
+    String fileName;
+    Scanner sc = new Scanner(System.in);
 
     public Fenetre() {
         this.setTitle("IAG0010JavaPlantLogger");
@@ -146,8 +149,8 @@ public class Fenetre extends JFrame {
                 chooser.setFileFilter(filter);
                 int returnVal = chooser.showOpenDialog(null);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    System.out.println("You chose to open this file: "
-                            + chooser.getSelectedFile().getName());
+                    fileName = chooser.getSelectedFile().getName();
+                    System.out.println("You chose to open this file: " + fileName);
                     fileSelected = true;
                     OPENBUTTON.setEnabled(false);
                     CLOSEBUTTON.setEnabled(true);
@@ -173,16 +176,24 @@ public class Fenetre extends JFrame {
         public void actionPerformed(ActionEvent e) {
             System.out.println("You have clicked on \"Connect\"");
 
-            if (!connected && fileSelected) {
+            do {
                 IAG0010JavaPlantLogger.connectToServer();
-                TEXTAREA.append("Salut!");
+                //TEXTAREA.append("Salut!");
                 /* J'essaie d'afficher ce qu'envoie le serveur, c'est à dier "Identify".
                 Pour cela, je me sers de la fonction qui se trouve dans la classe 
                 principale et qui prend en argument le JTextArea où je 
                 souhaite écrire*/
-                //IAG0010JavaPlantLogger.readOrWriteData(TEXTAREA);
+                IAG0010JavaPlantLogger.readData(TEXTAREA);
+                IAG0010JavaPlantLogger.sendData("coursework");
+                IAG0010JavaPlantLogger.readData(TEXTAREA);
+                //TEXTAREA.append("Please, enter the password.");
                 connected = true;
-            }
+            } while (!connected && fileSelected);
+            
+            DISCONNECTBUTTON.setEnabled(true);
+            STARTBUTTON.setEnabled(true);
+            BREAKBUTTON.setEnabled(true);
+            CONNECTBUTTON.setEnabled(false);
         }
     }
 
@@ -191,6 +202,15 @@ public class Fenetre extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             System.out.println("You have clicked on \"Disconnect\"");
+            IAG0010JavaPlantLogger.sendData("stop");
+            //IAG0010JavaPlantLogger.readData(TEXTAREA);
+            
+            DISCONNECTBUTTON.setEnabled(false);
+            STARTBUTTON.setEnabled(false);
+            BREAKBUTTON.setEnabled(false);
+            CONNECTBUTTON.setEnabled(true);
+            CLOSEBUTTON.setEnabled(false);
+            OPENBUTTON.setEnabled(true);
         }
     }
 
